@@ -47,7 +47,7 @@ input/\
 
 ### 5. Run the Full Pipeline
 * Default: uses input/ files, gemma4:e2b model\
-python src/main.py --
+python src/main.py
 
 * Custom paths & model
 python src/main.py ^\
