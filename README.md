@@ -26,7 +26,7 @@ This prototype accepts a voice query from an investor, transcribes it using Fast
 
 ### 1. Clone & Setup
 ```bash
-git clone <your-repo>
+git clone https://github.com/Bhabesh-Rath/voice-investor-assistant/tree/master
 cd voice-investor-assistant
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
