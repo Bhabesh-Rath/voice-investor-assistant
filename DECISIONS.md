@@ -1,7 +1,7 @@
 # Technical Decisions & Tradeoffs
 > Voice-Powered Investor Support Assistant — Sunrise Asset Management
 
-This document justifies architecture choices, documents constraints, and outlines production readiness considerations. All decisions are evaluated against: (1) assignment rubric requirements, (2) hardware limits (GTX 1060 6GB), and (3) open-source/local-only mandate.
+This document justifies architecture choices, documents constraints, and outlines production readiness considerations. All decisions are evaluated against: (1) assignment requirements, (2) hardware limits (GTX 1060 6GB), and (3) open-source/local-only mandate.
 
 ---
 
@@ -10,12 +10,12 @@ This document justifies architecture choices, documents constraints, and outline
 ### LLM: `gemma4:e2b` (Primary) / `llama3.2:3b` (Fallback)
 | Criteria | Decision | Rationale |
 |----------|----------|-----------|
-| **Hardware Fit** | ✅ 3B-class Q4 quantized (~2GB VRAM) | GTX 1060 6GB cannot safely host 7B+ unquantized models alongside system overhead. Q4_K_M quantization via Ollama ensures stability without OOM errors. |
-| **Rubric Alignment** | ✅ Explicitly recommended | Assignment suggests Llama 3 or Mistral; `llama3.2:3b` is instruction-tuned for grounding and citation compliance. |
-| **Grounding Quality** | ✅ Strong system prompt adherence | Tested to follow "cite Q#" instructions reliably vs. more creative smaller models. |
+| **Hardware Fit** | ✅ 3B-class Q4 quantized | GTX 1060 6GB cannot safely host 7B+ unquantized models alongside system overhead. Q4_K_M quantization via Ollama ensures stability without OOM errors. |
+| **Alignment** | ✅ Explicitly recommended | Assignment suggests Llama 3 or Mistral; `llama3.2:3b` is instruction-tuned for grounding and citation compliance. |
+| **Grounding Quality** | ✅ Strong system prompt adherence | Tested to follow "cite Q#" instructions reliably vs. more creative smaller models. Gemma 4 follows the citation perfecty. |
 | **Fallback Path** | ✅ Groq free tier allowed | If local inference fails due to OOM/drivers, pipeline can route to Groq with `llama-3.3-70b-versatile` per assignment clause. |
 
-Note: `gemma4:e2b` is used as primary based on availability. If tag is unrecognized by Ollama, fallback to `llama3.2:3b` is supported via CLI `--model` flag.
+Note: `gemma4:e2b` is used as primary based on the fact that it is a newer and more powerful model and supports the <think>...</think> token during response generation. If tag is unrecognized by Ollama, fallback to `llama3.2:3b` is supported via CLI `--model` flag.
 
 ### Embedding Model: `all-MiniLM-L6-v2`
 | Criteria | Decision | Rationale |
@@ -47,7 +47,7 @@ Regex pattern used for intelligent splitting:
 | **Chunk Size** | ✅ Natural boundary (not fixed) | Avoids cutting answers mid-sentence; respects FAQ author's logical grouping. |
 
 Why not semantic chunking?
-Semantic chunkers (e.g., `langchain-text-splitters`) add ~2s latency and require additional model downloads. For structured FAQ documents, regex boundary splitting is simpler, deterministic, and rubric-sufficient.
+Semantic chunkers (e.g., `langchain-text-splitters`) add ~2s latency and require additional model downloads. For structured FAQ documents, regex boundary splitting is simpler, deterministic, and rubric-sufficient. This is a decision made keeping the old testing hardware in mind.
 
 ---
 
@@ -57,9 +57,8 @@ Semantic chunkers (e.g., `langchain-text-splitters`) add ~2s latency and require
 | Tradeoff | Impact | Mitigation |
 |----------|--------|------------|
 | **CPU Whisper** | +1.5s latency vs GPU | Guaranteed VRAM availability for LLM; latency still under 15s total (acceptable for prototype). |
-| **No Reranker** | Potential retrieval noise | Top-3 retrieval + strong LLM grounding prompt compensates; add `bge-reranker-base` in production. |
-| **Single-GPU Assumption** | No parallel inference | Pipeline is sequential by design; async queue (Celery) added in production plan. |
-| **Manual Model Downloads** | Slightly complex setup | Documented in README; model caching ensures one-time download only. |
+| **No Reranker** | Potential retrieval noise | Top-3 retrieval + strong LLM grounding prompt compensates. |
+| **Single-GPU Assumption** | No parallel inference | Pipeline is sequential by design. |
 | **No Streaming Response** | User waits for full answer | Acceptable for 15s total latency; add streaming tokens in production UX. |
 | **No PII Redaction** | Privacy consideration | Out of scope for prototype; add NER-based redaction layer in production. |
 
@@ -68,13 +67,13 @@ Semantic chunkers (e.g., `langchain-text-splitters`) add ~2s latency and require
 → Production: Swap to Milvus/Weaviate with sharding + replication for horizontal scaling.
 
 ❌ Sequential pipeline stages — Each step blocks the next.
-→ Production: Implement async pipeline with Celery/RQ + Redis queue for concurrent request handling.
+→ Production: Implement async pipeline with Celery/Redis Queue for concurrent request handling.
 
 ❌ No query caching — Repeated investor queries recompute embeddings + LLM.
-→ Production: Add Redis cache keyed by transcript hash; TTL 24h for FAQ content.
+→ Production: Add Redis cache keyed by transcript hash; TTL(Time To Live) 24h for FAQ content.
 
 ❌ Local-only LLM routing — No auto-failover if GPU OOMs.
-→ Production: Model router that checks VRAM + queue depth, routes to Groq/TogetherAI fallback.
+→ Production: Model router that checks VRAM + queue depth, routes to Groq or other fallback options.
 
 ❌ No monitoring/observability — No metrics on latency, errors, or usage.
 → Production: Add Prometheus + Grafana dashboard; structured JSON logging; Sentry for error tracking.
@@ -114,27 +113,6 @@ Semantic chunkers (e.g., `langchain-text-splitters`) add ~2s latency and require
 - Audit trail: log all queries + responses + citations for regulatory review (SEBI compliance)
 - RBAC: restrict FAQ ingestion to authorized admins only; sign model weights for integrity
 - Rate limiting: prevent abuse via API gateway; per-user quota enforcement
-
----
-
-## ✅ Green Flags Implemented in Prototype
-- Latency benchmarks logged at each stage (unprompted rubric requirement)
-- Simple eval script (`src/eval.py`) checks citation format + non-empty response
-- `DECISIONS.md` explicitly flags non-scaling components + mitigation strategies
-- README runs on first attempt with documented steps + troubleshooting table
-- Edge cases handled: empty audio, missing files, retrieval failure, OOM fallback
-- Modular code structure: `src/` with clear separation of concerns (no monolithic script)
-- Hardware-aware: Whisper on CPU, LLM quantized, embedding model CPU-friendly
-
----
-
-## 🚩 Red Flags Avoided
-- No naive character-count chunking — uses FAQ boundary regex with metadata preservation
-- No vague model justification — ties choices to 6GB VRAM + rubric + latency targets
-- No verbatim FAQ copying — LLM prompted to paraphrase + cite `[Q#]`; post-processing safeguard added
-- No monolithic script — modular `src/` structure with clear responsibilities per file
-- No silent failures — comprehensive logging + graceful error messages + eval script validation
-- No cloud API dependency — all components run locally; Groq fallback documented but not required
 
 ---
 
