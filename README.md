@@ -46,13 +46,13 @@ input/\
 └── SunriseAMC_FAQ.pdf    # Provided knowledge base
 
 ### 5. Run the Full Pipeline
-* Default: uses input/ files, gemma4:e2b model
-python src/main.py
+* Default: uses input/ files, gemma4:e2b model\
+python src/main.py --
 
 * Custom paths & model
-python src/main.py ^
-  --audio path/to/query.mp3 ^
-  --pdf path/to/faq.pdf ^
+python src/main.py ^\
+  --audio path/to/query.mp3 ^\
+  --pdf path/to/faq.pdf ^\
   --model llama3.2:3b
   
 ## Outputs saved to
