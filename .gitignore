@@ -1,0 +1,31 @@
+# Generated data & outputs
+input/
+data/
+output/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+.DS_Store
+Thumbs.db
+*.log
+
+# Model weights (large binaries)
+data/models/
+!data/models/.gitkeep
+AI/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment secrets
+.env
+*.key
