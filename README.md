@@ -101,5 +101,9 @@ python src/main.py --audio input/investor_sample.mp3 2>&1 | findstr "done in"
 * Claude Sonnet 4.6 was used to aid the initial information gathering process. 
 * Qwen 3.6-Plus was used for the code generation for this assignment.
 
+## Future updates (Post Submission)
+* Add a simple Gradio UI.
+* Stress test with unrelated audio.
+
 ## License & Disclaimer
 MIT License — free for assessment and educational use.
