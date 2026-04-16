@@ -123,15 +123,15 @@ Semantic chunkers (e.g., `langchain-text-splitters`) add ~2s latency and require
     OS: Windows 11, Python 3.12.2
 
     Pipeline Run (investor_sample.mp3 + SunriseAMC_FAQ.pdf):
-    - Transcription (small, CPU): 6.4s
-    - PDF Ingest + Embed: 0.3s (cached) / ~2s (first run)
-    - Retrieval: 5.9s (embedding model download on first run)
-    - LLM Generation (gemma4:e2b): 0.01s (cached response) / ~6s (first gen)
-    - Total: ~12.8s
+    - Transcription (small, CPU): 7.94s
+    - PDF Ingest + Embed: 0.21s (cached) / ~2s (first run)
+    - Retrieval: 6.47s (embedding model download on first run)
+    - LLM Generation (gemma4:e2b): 138.07s (first gen)
+    - Total: ~152.69s
     - Peak VRAM: ~2.1GB (LLM) + ~0.4GB (system) = ~2.5GB/6GB ✅
     - Peak RAM: ~1.2GB ✅
 
-    Result: Grounded answer with FAQ citation. No hallucinations observed.
+    Result: Grounded answer with FAQ citation. No hallucinations observed with the provided input.
     Transcript quality: High confidence scores (0.91-0.99), accurate financial term recognition.
 
 > This prototype demonstrates rubric compliance within strict hardware constraints. Production deployment would require the scaling, monitoring, and security measures outlined above.
