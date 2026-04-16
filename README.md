@@ -98,7 +98,7 @@ python src/main.py --audio input/investor_sample.mp3 2>&1 | findstr "done in"
 * GPU OOM → Whisper forced to CPU; LLM quantization enforced
 
 ## AI use disclosure
-Claude Sonnet 4.6 was used to aid the initial information gathering process. 
+Claude Sonnet 4.6 was used to aid the initial information gathering process.\ 
 Qwen 3.6-Plus was used for the code generation for this assignment.
 
 ## License & Disclaimer
