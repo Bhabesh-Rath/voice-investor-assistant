@@ -31,7 +31,7 @@ cd voice-investor-assistant
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
+```
 ### 2. Start Ollama & Pull Model
 Ensure Ollama is running (auto-starts on install)
 ollama serve
@@ -40,9 +40,9 @@ ollama pull llama3.2:3b
 OR use your manually imported model (gemma4:e2b tested)
 
 ### 3. Place Input Files
-Ensure your input files are in the input/ directory:
-input/
-├── investor_sample.mp3   # Provided audio query
+Ensure your input files are in the input/ directory:\
+input/\
+├── investor_sample.mp3   # Provided audio query\
 └── SunriseAMC_FAQ.pdf    # Provided knowledge base
 
 ### 5. Run the Full Pipeline
@@ -60,27 +60,27 @@ python src/main.py ^
 * output/final_response.json — Grounded answer with FAQ citation
 
 ## Project structure
-.
-├── input/                     # Place audio & PDF here
-│   ├── investor_sample.mp3
-│   └── SunriseAMC_FAQ.pdf
-├── data/                      # Auto-generated (gitignored)
-│   ├── models/
-│   │   ├── whisper/{base,small}/
-│   │   └── sentence-transformers/
-│   └── chroma/                # Vector store
-├── output/                    # Auto-generated (gitignored)
-│   ├── transcript.json
-│   └── final_response.json
-├── src/
-│   ├── main.py               # CLI orchestrator
-│   ├── transcriber.py        # Faster-Whisper wrapper
-│   ├── ingestor.py           # PDF parsing + smart chunking
-│   ├── retriever.py          # ChromaDB + embeddings
-│   └── generator.py          # Ollama LLM interface
-├── requirements.txt
-├── README.md
-├── DECISIONS.md
+.\
+├── input/                     # Place audio & PDF here\
+│   ├── investor_sample.mp3\
+│   └── SunriseAMC_FAQ.pdf\
+├── data/                      # Auto-generated (gitignored)\
+│   ├── models/\
+│   │   ├── whisper/{base,small}/\
+│   │   └── sentence-transformers/\
+│   └── chroma/                # Vector store\
+├── output/                    # Auto-generated (gitignored)\
+│   ├── transcript.json\
+│   └── final_response.json\
+├── src/\
+│   ├── main.py               # CLI orchestrator\
+│   ├── transcriber.py        # Faster-Whisper wrapper\
+│   ├── ingestor.py           # PDF parsing + smart chunking\
+│   ├── retriever.py          # ChromaDB + embeddings\
+│   └── generator.py          # Ollama LLM interface\
+├── requirements.txt\
+├── README.md\
+├── DECISIONS.md\
 └── .gitignore
 
 ## Evaluation & Testing
